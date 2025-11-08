@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Image,
@@ -7,10 +7,18 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import { Text, Searchbar, Button, IconButton, FAB } from "react-native-paper";
+import {
+  Text,
+  Searchbar,
+  Button,
+  IconButton,
+  FAB,
+  ActivityIndicator,
+} from "react-native-paper";
 import { useRouter } from "expo-router";
 import { colors } from "../../theme";
 import { useCart } from "../context/CartContext";
+import { useProducts, type Product } from "@/services/react-query/products";
 
 const { width } = Dimensions.get("window");
 
@@ -22,65 +30,17 @@ const carouselImages = [
   require("../../assets/images/banner4.png"),
 ];
 
-// 🛍️ Productos locales
-const featuredProducts = [
-  {
-    id: "p1",
-    name: "Bocina Bluetooth",
-    price: 899,
-    category: "Tecnología",
-    image: require("../../assets/images/products/bocina.avif"),
-  },
-  {
-    id: "p2",
-    name: "Gorro de Invierno",
-    price: 249,
-    category: "Ropa",
-    image: require("../../assets/images/products/gorro.avif"),
-  },
-  {
-    id: "p3",
-    name: "Lámpara de Escritorio",
-    price: 499,
-    category: "Hogar",
-    image: require("../../assets/images/products/lampara.avif"),
-  },
-  {
-    id: "p4",
-    name: "Perfume Floral",
-    price: 1299,
-    category: "Accesorios",
-    image: require("../../assets/images/products/perfume.avif"),
-  },
-  {
-    id: "p5",
-    name: "Playera Rosa Claro",
-    price: 399,
-    category: "Ropa",
-    image: require("../../assets/images/products/playera.avif"),
-  },
-  {
-    id: "p6",
-    name: "Vestido Dorado",
-    price: 799,
-    category: "Ropa",
-    image: require("../../assets/images/products/vestido-dorado.avif"),
-  },
-  {
-    id: "p7",
-    name: "Lavadora EcoSmart",
-    price: 6899,
-    category: "Hogar",
-    image: require("../../assets/images/products/lavadora.avif"),
-  },
-];
-
 export default function Home() {
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todo");
   const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);
+  const {
+    data: products = [],
+    isPending,
+    isError,
+  } = useProducts();
 
   // 🎠 Carrusel automático
   useEffect(() => {
@@ -95,18 +55,31 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [currentIndex]);
 
-  const categories = ["Todo", "Ropa", "Accesorios", "Hogar", "Tecnología"];
+  const categories = useMemo(() => {
+    const unique = new Set(products.map((product) => product.category));
+    return ["Todo", ...Array.from(unique)];
+  }, [products]);
 
-  const filteredProducts = featuredProducts.filter((p) => {
-    const matchQuery = p.name.toLowerCase().includes(query.toLowerCase());
-    const matchCategory =
-      selectedCategory === "Todo" || p.category === selectedCategory;
-    return matchQuery && matchCategory;
-  });
+  useEffect(() => {
+    if (selectedCategory !== "Todo" && !categories.includes(selectedCategory)) {
+      setSelectedCategory("Todo");
+    }
+  }, [categories, selectedCategory]);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      const matchQuery = product.name
+        .toLowerCase()
+        .includes(query.toLowerCase());
+      const matchCategory =
+        selectedCategory === "Todo" || product.category === selectedCategory;
+      return matchQuery && matchCategory;
+    });
+  }, [products, query, selectedCategory]);
 
   const { addToCart } = useCart();
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: Product) => {
     addToCart({
       id: product.id,
       name: product.name,
@@ -227,6 +200,29 @@ export default function Home() {
                 Productos recomendados
               </Text>
 
+              {isPending && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 12,
+                    gap: 8,
+                  }}
+                >
+                  <ActivityIndicator animating color={colors.primary} />
+                  <Text style={{ color: colors.primary }}>
+                    Cargando productos...
+                  </Text>
+                </View>
+              )}
+
+              {isError && (
+                <Text style={{ color: "#d9534f", marginBottom: 12 }}>
+                  No pudimos cargar los productos. Intenta nuevamente en unos
+                  momentos.
+                </Text>
+              )}
+
               {/* Filtros */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {categories.map((cat) => (
@@ -332,6 +328,40 @@ export default function Home() {
             </View>
           </View>
         )}
+        ListEmptyComponent={
+          <View
+            style={{
+              marginTop: 40,
+              alignItems: "center",
+              justifyContent: "center",
+              paddingHorizontal: 32,
+            }}
+          >
+            {isPending ? (
+              <ActivityIndicator animating color={colors.primary} size="large" />
+            ) : isError ? (
+              <Text
+                style={{
+                  color: "#d9534f",
+                  fontSize: 16,
+                  textAlign: "center",
+                }}
+              >
+                Ocurrió un problema al cargar los productos.
+              </Text>
+            ) : (
+              <Text
+                style={{
+                  color: colors.primary,
+                  fontSize: 16,
+                  textAlign: "center",
+                }}
+              >
+                No encontramos productos para tu búsqueda.
+              </Text>
+            )}
+          </View>
+        }
       />
 
       {/* 💬 FAB Asistente */}
