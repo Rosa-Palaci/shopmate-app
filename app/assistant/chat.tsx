@@ -12,6 +12,7 @@ import {
 import { Text, IconButton, Button } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { colors } from "../../theme";
+import { useCart } from "../context/CartContext";
 
 // 🧩 Tipado del mensaje
 type Message = {
@@ -79,8 +80,11 @@ const products = [
   },
 ];
 
+type RecommendedProduct = NonNullable<Message["products"]>[number];
+
 export default function AssistantChat() {
   const router = useRouter();
+  const { addToCart } = useCart();
   const [messages, setMessages] = useState<Message[]>([
     {
       from: "bot",
@@ -129,6 +133,23 @@ export default function AssistantChat() {
       setIsTyping(false);
       setMessages((prev) => [...prev, botMessage]);
     }, 1500); // ⏱️ efecto typing de 1.5 segundos
+  };
+
+  const handleAddProduct = (product: RecommendedProduct) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        from: "bot",
+        text: `Perfecto, agregué ${product.name} a tu carrito 🛒`,
+      },
+    ]);
   };
 
   return (
@@ -243,7 +264,7 @@ export default function AssistantChat() {
                     mode="contained"
                     buttonColor={colors.primary}
                     textColor="#fff"
-                    onPress={() => alert(`Agregado ${p.name} al carrito 🛒`)}
+                    onPress={() => handleAddProduct(p)}
                     style={{
                       borderRadius: 8,
                       paddingVertical: 2,
