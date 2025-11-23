@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -8,7 +9,7 @@ type AuthState = {
   logout: () => void;
 };
 
-export const useAuthStore = create<AuthState>()(
+const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       customer_id: null,
@@ -21,3 +22,5 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+export default useAuthStore;
