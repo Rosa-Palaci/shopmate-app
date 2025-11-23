@@ -2,7 +2,7 @@ import { Stack, useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import { View, Text } from "react-native";
 import { useEffect } from "react";
-import { useAuthStore } from "./stores/useAuthStore";
+import useAuthStore from "./stores/useAuthStore";
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -13,7 +13,7 @@ export default function SplashScreen() {
 
     const navigateAfterSplash = () => {
       const targetRoute = useAuthStore.getState().customer_id
-        ? "/(tabs)/home"
+        ? "/tabs/home"
         : "/login";
 
       timer = setTimeout(() => {
