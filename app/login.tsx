@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, TouchableOpacity, Image, Dimensions } from "react-native";
+import { Alert, View, TouchableOpacity, Image, Dimensions } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { Stack, useRouter } from "expo-router";
 import { colors } from "../theme";
@@ -9,9 +9,11 @@ const { height, width } = Dimensions.get("window");
 
 export default function Login() {
   const router = useRouter();
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
   const [customerId, setCustomerId] = useState("");
   const hydratedCustomerId = useAuthStore((state) => state.customer_id);
-  const setAuthCustomerId = useAuthStore((state) => state.setCustomerId);
+  const saveId = useAuthStore((state) => state.setCustomerId);
   const hasHydrated = useAuthStore.persist?.hasHydrated?.() ?? false;
 
   useEffect(() => {
@@ -32,14 +34,12 @@ export default function Login() {
   }, [hasHydrated, hydratedCustomerId, router]);
 
   const handleLogin = () => {
-    const trimmedCustomerId = customerId.trim();
-
-    if (!trimmedCustomerId) {
-      alert("Por favor ingresa tu customer_id");
+    if (!customerId) {
+      Alert.alert("Error", "Por favor ingresa un Customer ID válido");
       return;
     }
 
-    setAuthCustomerId(trimmedCustomerId);
+    saveId(customerId);
     router.replace("/(tabs)/home");
   };
 
@@ -94,10 +94,12 @@ export default function Login() {
             </Text>
 
             <TextInput
-              label="customer_id"
+              label="Customer ID"
+              placeholder="Customer ID"
               mode="outlined"
               value={customerId}
               onChangeText={setCustomerId}
+              keyboardType="numeric"
               autoCapitalize="none"
               style={{
                 marginBottom: 18,
@@ -114,6 +116,9 @@ export default function Login() {
              * Se mantiene comentado temporalmente para referencia sin afectar el nuevo login.
              */}
             {/**
+            const [email, setEmail] = useState("");
+            const [password, setPassword] = useState("");
+
             <TextInput
               label="Correo electrónico"
               mode="outlined"
@@ -130,6 +135,11 @@ export default function Login() {
               activeOutlineColor="#ff5b6bff"
               theme={{ roundness: 28 }}
             />
+
+            if (!email || !password) {
+              alert("Por favor completa todos los campos");
+              return;
+            }
 
             <TextInput
               label="Contraseña"
