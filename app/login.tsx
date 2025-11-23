@@ -3,69 +3,29 @@ import { Alert, View, TouchableOpacity, Image, Dimensions } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { Stack, useRouter } from "expo-router";
 import { colors } from "../theme";
-import useAuthStore from "./stores/useAuthStore";
+import { useAuthStore } from "./stores/useAuthStore";
 
 const { height, width } = Dimensions.get("window");
 
 export default function Login() {
   const router = useRouter();
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
   const [customerId, setCustomerId] = useState("");
   const hydratedCustomerId = useAuthStore((state) => state.customer_id);
   const saveId = useAuthStore((state) => state.setCustomerId);
   const hasHydrated = useAuthStore.persist?.hasHydrated?.() ?? false;
 
-  /*
-   * Flujo original de autenticación con correo y contraseña conservado para referencia:
-   *
-   * const [email, setEmail] = useState("");
-   * const [password, setPassword] = useState("");
-   *
-   * <TextInput
-   *   label="Correo electrónico"
-   *   mode="outlined"
-   *   value={email}
-   *   onChangeText={setEmail}
-   *   keyboardType="email-address"
-   *   autoCapitalize="none"
-   *   style={{ marginBottom: 12, borderRadius: 28, backgroundColor: "white" }}
-   *   outlineColor="#f0c5ca"
-   *   activeOutlineColor="#ff5b6bff"
-   *   theme={{ roundness: 28 }}
-   * />
-   *
-   * <TextInput
-   *   label="Contraseña"
-   *   mode="outlined"
-   *   value={password}
-   *   onChangeText={setPassword}
-   *   secureTextEntry
-   *   style={{ marginBottom: 18, borderRadius: 28, backgroundColor: "white" }}
-   *   outlineColor="#f0c5ca"
-   *   activeOutlineColor="#ff5b6bff"
-   *   theme={{ roundness: 28 }}
-   * />
-   *
-   * <Button
-   *   mode="contained"
-   *   onPress={handleEmailLogin}
-   *   buttonColor={colors.primary}
-   *   textColor="#fff"
-   *   style={{ borderRadius: 28, width: "100%", marginTop: 5 }}
-   * >
-   *   Iniciar sesión
-   * </Button>
-   */
-
   useEffect(() => {
     if (hasHydrated && hydratedCustomerId) {
-      router.replace("/tabs/home");
+      router.replace("/(tabs)/home");
       return;
     }
 
     if (!hasHydrated) {
       const unsubscribe = useAuthStore.persist?.onFinishHydration?.(() => {
         if (useAuthStore.getState().customer_id) {
-          router.replace("/tabs/home");
+          router.replace("/(tabs)/home");
         }
       });
 
@@ -80,7 +40,7 @@ export default function Login() {
     }
 
     saveId(customerId);
-    router.replace("/tabs/home");
+    router.replace("/(tabs)/home");
   };
 
   return (
@@ -151,6 +111,53 @@ export default function Login() {
               theme={{ roundness: 28 }}
             />
 
+            {/**
+             * Anterior flujo de autenticación con correo y contraseña.
+             * Se mantiene comentado temporalmente para referencia sin afectar el nuevo login.
+             */}
+            {/**
+            const [email, setEmail] = useState("");
+            const [password, setPassword] = useState("");
+
+            <TextInput
+              label="Correo electrónico"
+              mode="outlined"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              style={{
+                marginBottom: 12,
+                borderRadius: 28,
+                backgroundColor: "white",
+              }}
+              outlineColor="#f0c5ca"
+              activeOutlineColor="#ff5b6bff"
+              theme={{ roundness: 28 }}
+            />
+
+            if (!email || !password) {
+              alert("Por favor completa todos los campos");
+              return;
+            }
+
+            <TextInput
+              label="Contraseña"
+              mode="outlined"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={{
+                marginBottom: 18,
+                borderRadius: 28,
+                backgroundColor: "white",
+              }}
+              outlineColor="#f0c5ca"
+              activeOutlineColor="#ff5b6bff"
+              theme={{ roundness: 28 }}
+            />
+            */}
+
             <Button
               mode="contained"
               onPress={handleLogin}
@@ -162,7 +169,7 @@ export default function Login() {
                 marginTop: 5,
               }}
             >
-              Entrar
+              Iniciar sesión
             </Button>
           </View>
 
