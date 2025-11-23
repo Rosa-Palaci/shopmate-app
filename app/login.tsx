@@ -1,16 +1,35 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, TouchableOpacity, Image, Dimensions } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { Stack, useRouter } from "expo-router";
 import { colors } from "../theme";
-import { useAuthStore } from "./context/AuthStore";
+import { useAuthStore } from "./stores/useAuthStore";
 
 const { height, width } = Dimensions.get("window");
 
 export default function Login() {
   const router = useRouter();
   const [customerId, setCustomerId] = useState("");
+  const hydratedCustomerId = useAuthStore((state) => state.customer_id);
   const setAuthCustomerId = useAuthStore((state) => state.setCustomerId);
+  const hasHydrated = useAuthStore.persist?.hasHydrated?.() ?? false;
+
+  useEffect(() => {
+    if (hasHydrated && hydratedCustomerId) {
+      router.replace("/(tabs)/home");
+      return;
+    }
+
+    if (!hasHydrated) {
+      const unsubscribe = useAuthStore.persist?.onFinishHydration?.(() => {
+        if (useAuthStore.getState().customer_id) {
+          router.replace("/(tabs)/home");
+        }
+      });
+
+      return () => unsubscribe?.();
+    }
+  }, [hasHydrated, hydratedCustomerId, router]);
 
   const handleLogin = () => {
     const trimmedCustomerId = customerId.trim();

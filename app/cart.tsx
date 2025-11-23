@@ -1,9 +1,9 @@
-import React, { useContext } from "react";
-import { View, FlatList, Image, TouchableOpacity } from "react-native";
+import React from "react";
+import { View, FlatList, Image } from "react-native";
 import { Text, Button, Card, IconButton } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { colors } from "../theme";
-import { useCart } from "./context/CartContext";
+import { useCart } from "./stores/useCartStore";
 
 export default function Cart() {
   const router = useRouter();

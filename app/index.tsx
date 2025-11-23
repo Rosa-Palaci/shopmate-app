@@ -2,17 +2,40 @@ import { Stack, useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import { View, Text } from "react-native";
 import { useEffect } from "react";
+import { useAuthStore } from "./stores/useAuthStore";
 
 export default function SplashScreen() {
   const router = useRouter();
+  const hasHydrated = useAuthStore.persist?.hasHydrated?.() ?? false;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace("/login"); // 👈 cambia aquí si tu ruta se llama diferente
-    }, 3000);
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
-    return () => clearTimeout(timer);
-  }, []);
+    const navigateAfterSplash = () => {
+      const targetRoute = useAuthStore.getState().customer_id
+        ? "/(tabs)/home"
+        : "/login";
+
+      timer = setTimeout(() => {
+        router.replace(targetRoute);
+      }, 3000);
+    };
+
+    if (hasHydrated) {
+      navigateAfterSplash();
+    } else {
+      const unsubscribe = useAuthStore.persist?.onFinishHydration?.(() => {
+        navigateAfterSplash();
+      });
+
+      return () => {
+        if (timer) clearTimeout(timer);
+        unsubscribe?.();
+      };
+    }
+
+    return () => timer && clearTimeout(timer);
+  }, [hasHydrated, router]);
 
   return (
     <>

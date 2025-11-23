@@ -10,7 +10,7 @@ import {
 import { Text, Searchbar, Button, IconButton, FAB } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { colors } from "../../theme";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../stores/useCartStore";
 
 const { width } = Dimensions.get("window");
 
