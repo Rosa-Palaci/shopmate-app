@@ -3,19 +3,24 @@ import { View, TouchableOpacity, Image, Dimensions } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { Stack, useRouter } from "expo-router";
 import { colors } from "../theme";
+import { useAuthStore } from "./context/AuthStore";
 
 const { height, width } = Dimensions.get("window");
 
 export default function Login() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [customerId, setCustomerId] = useState("");
+  const setAuthCustomerId = useAuthStore((state) => state.setCustomerId);
 
   const handleLogin = () => {
-    if (!email || !password) {
-      alert("Por favor ingresa correo y contraseña");
+    const trimmedCustomerId = customerId.trim();
+
+    if (!trimmedCustomerId) {
+      alert("Por favor ingresa tu customer_id");
       return;
     }
+
+    setAuthCustomerId(trimmedCustomerId);
     router.replace("/(tabs)/home");
   };
 
@@ -70,6 +75,27 @@ export default function Login() {
             </Text>
 
             <TextInput
+              label="customer_id"
+              mode="outlined"
+              value={customerId}
+              onChangeText={setCustomerId}
+              autoCapitalize="none"
+              style={{
+                marginBottom: 18,
+                borderRadius: 28,
+                backgroundColor: "white",
+              }}
+              outlineColor="#f0c5ca"
+              activeOutlineColor="#ff5b6bff"
+              theme={{ roundness: 28 }}
+            />
+
+            {/**
+             * Anterior flujo de autenticación con correo y contraseña.
+             * Se mantiene comentado temporalmente para referencia sin afectar el nuevo login.
+             */}
+            {/**
+            <TextInput
               label="Correo electrónico"
               mode="outlined"
               value={email}
@@ -101,6 +127,7 @@ export default function Login() {
               activeOutlineColor="#ff5b6bff"
               theme={{ roundness: 28 }}
             />
+            */}
 
             <Button
               mode="contained"
