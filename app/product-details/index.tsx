@@ -9,7 +9,7 @@ import {
 import { Text, Button, IconButton, Card } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { colors } from "../../theme";
-import { useCart } from "../context/CartContext"; 
+import { useCart } from "../stores/useCartStore";
 
 const featuredProducts = [
   {
@@ -78,7 +78,7 @@ const featuredProducts = [
 export default function ProductDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { addToCart } = useCart(); // ✅ Usamos el contexto
+  const { addToCart } = useCart(); // ✅ Usamos la tienda global
 
   const product = featuredProducts.find((p) => p.id === id);
 
